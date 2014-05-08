@@ -41,7 +41,7 @@ class Card
   end
 
   def show_cards
-    "It's a #{face_value} of #{find_suit}'s"
+    "The #{face_value} of #{find_suit}'s"
   end
 
   def to_s
@@ -65,7 +65,7 @@ attr_accessor :cards
   def initialize
     @cards = []
     ['H', 'D', 'S', 'C'].each do |suit|
-      ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'].each do |face_value|
+      ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'].each do |face_value|
       @cards << Card.new(suit, face_value)
       end
     end
@@ -101,7 +101,7 @@ module Hand
 
   total = 0
   face_value.each do |val|
-    if val == 'A'
+    if val == 'Ace'
       total += 11
 
     elsif 
@@ -110,7 +110,7 @@ module Hand
   end
   
   #correct for Aces
-  face_value.select{|e| e == 'A'}.count.times do
+  face_value.select{|e| e == 'Ace'}.count.times do
     break if total<= 21
     total -= 10
   end
@@ -140,6 +140,10 @@ attr_accessor :name, :cards
   @cards = []
   end
 
+  def show_flop
+    show_hand
+  end
+
 end
 
 class Dealer
@@ -154,6 +158,11 @@ class Dealer
   puts "*#{name} deals cards*"
   end
 
+  def show_flop
+    puts "---- #{name}'s Hand ----"
+    puts "=> First card is hidden"
+    puts "=> Second card is #{cards[1]}"
+  end
 end
 
 class Blackjack
@@ -165,74 +174,115 @@ class Blackjack
     @deck = Deck.new
   end
 
-  def run
+  def deal_cards
     player.add_card(deck.deal_one)
     dealer.add_card(deck.deal_one)
     player.add_card(deck.deal_one)
     dealer.add_card(deck.deal_one)
-    dealer.show_hand
-    player.show_hand
-   
-   #player turn
+  end
+
+  def show_flop
+    player.show_flop
+    dealer.show_flop
+  end
+
+  
+  def player_turn
+    
     turn = 0
-    while player.total < 21 && turn < 6
-    puts "You have #{player.total}, what would you like to do, 1) for Hit, 2) for Stay?"
+    while player.total < 21 && turn < 5
+    puts "#{player.name} has #{player.total}, choose 1) for Hit, 2) for Stay?"
     choice = gets.chomp
       
+      if !['1', '2'].include?(choice)
+        puts "Error: you must enter 1 or 2"
+      next
+      end
+
       if choice == '1'
         player.add_card(deck.deal_one)
         player.show_hand
         turn += 1
-      else
+      end
+
+      if choice == '2'  
+        puts "You chose to stay."
         break
       end # -- if choice
 
     end # -- while player
     
     if player.total == 21
-      puts "Congratulations #{player.name}, you got blackjack you win" 
+      puts "#{player.name}, got blackjack #{player.name} wins" 
       exit
     end
 
-    if player.total > 21
-      puts "Sorry #{player.name}, you're Bust"
+    if player.is_busted?
+      puts "#{player.name}, is Bust"
       exit
-    end #end player turn
+    end
 
-    #dealer turn
+  end
+
+  def dealer_turn
+    
     turn = 0
     while dealer.total < 17 && turn < 6
-    puts "Dealer hits"
-    dealer.add_card(deck.deal_one)
-    turn += 1
+      puts "Dealer hits"
+      dealer.add_card(deck.deal_one)
+      turn += 1
     end
+
     dealer.show_hand
-
     if dealer.total == 21
-    puts "Sorry #{player.name}, the dealer got blackjack you lose"
-    exit
+      puts "Sorry #{player.name}, the dealer got blackjack you lose"
+      exit
+    end
   end
 
-  if dealer.total > 21
-    puts "The dealer is bust, you win!"
-    exit
-
-  elsif dealer.total > player.total
-    puts "The dealer has #{dealer.total}, you have #{player.total}"
-    puts "Sorry #{player.name}, the dealer wins"
-
-  elsif dealer.total == player.total
-    puts "The dealer has #{dealer.total}, you have #{player.total}"
-    puts "It's a draw, no one wins"
-    exit
-
-  elsif player.total > dealer.total
-    puts "Sweet, you have #{player.total}, the dealer has #{dealer.total}"
-    puts "#{player.name} wins"
-    exit
+  def who_won?(player, dealer)
+    
+    if dealer.total > 21
+      puts "The dealer is bust, you win!"
+      exit
+    #compare cards
+    elsif dealer.total > player.total
+      puts "The dealer has #{dealer.total}, #{player.name} has #{player.total}"
+      puts "Sorry #{player.name}, the dealer wins"
+    elsif dealer.total == player.total
+      puts "The dealer has #{dealer.total}, #{player.name} has #{player.total}"
+      puts "It's a draw, no one wins"
+      exit
+    elsif player.total > dealer.total
+      puts "#{player.name} has #{player.total}, the dealer has #{dealer.total}"
+      puts "#{player.name} wins"
+      exit
+    end
+  
   end
-  end # -- def run
 
-end # -- class Blackjack 
+  def play_again
+    puts "Want to play again Y) for yes or N) for no?"
+    answer = gets.chomp.downcase
+    
+    if answer == 'y'
+      Blackjack.new.run
+    else
+      exit
+    end
+
+  end
+
+  def run
+    deal_cards
+    show_flop
+    player_turn
+    dealer_turn
+    who_won?(player, dealer) 
+    play_again?
+  end
+
+end
 
 Blackjack.new.run
+
