@@ -186,7 +186,7 @@ class Blackjack
     dealer.show_flop
   end
 
-  
+
   def player_turn
     
     turn = 0
@@ -214,12 +214,12 @@ class Blackjack
     
     if player.total == 21
       puts "#{player.name}, got blackjack #{player.name} wins" 
-      exit
+      play_again
     end
 
     if player.is_busted?
       puts "#{player.name}, is Bust"
-      exit
+      play_again
     end
 
   end
@@ -236,7 +236,7 @@ class Blackjack
     dealer.show_hand
     if dealer.total == 21
       puts "Sorry #{player.name}, the dealer got blackjack you lose"
-      exit
+      play_again
     end
   end
 
@@ -244,7 +244,7 @@ class Blackjack
     
     if dealer.total > 21
       puts "The dealer is bust, you win!"
-      exit
+      play_again
     #compare cards
     elsif dealer.total > player.total
       puts "The dealer has #{dealer.total}, #{player.name} has #{player.total}"
@@ -252,11 +252,11 @@ class Blackjack
     elsif dealer.total == player.total
       puts "The dealer has #{dealer.total}, #{player.name} has #{player.total}"
       puts "It's a draw, no one wins"
-      exit
+      play_again
     elsif player.total > dealer.total
       puts "#{player.name} has #{player.total}, the dealer has #{dealer.total}"
       puts "#{player.name} wins"
-      exit
+      play_again
     end
   
   end
@@ -279,7 +279,7 @@ class Blackjack
     player_turn
     dealer_turn
     who_won?(player, dealer) 
-    play_again?
+    play_again
   end
 
 end
